@@ -1,7 +1,6 @@
 # cirrup
 
-This is an early release of cirrup. Please forward any questions to
-cosmo@ucsc.edu.
+This is an early release of cirrup.
 
 ## What it Does
 Cirrup is a web server that manages Jamf static groups defined by ldap attributes not captured by Jamf. The intended use is for automatically assigning computers belonging to users to groups based on attribute values from their ldap entry. For example, maintaining a static group of faculty and staff that acts dynamically like a smart group.
