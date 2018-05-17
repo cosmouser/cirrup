@@ -1,0 +1,42 @@
+# This is the config for cirrup
+# 
+#
+
+# the url for the jss with https://
+JssUrl		=	"https://example-jss.example.edu" 
+
+# the ip of the jss
+JssIP		=	"192.224.16.120" 
+
+# the port number the jss is hosted on
+JssPort		=	8443 
+
+# the username of the jss user the server should put as
+ApiUser		=	"apiuser" 
+
+# the password for the jss user
+ApiPass		=	"insertpasswordhere" 
+
+# the url to the ldap server to get users from
+LdapUrl		=	"ldap.example.com" 
+
+# the port for the ldap server
+LdapPort	=	389 
+
+# the search base to find users in
+LdapSearchBase	=	"ou=People,dc=ucsc,dc=edu" 
+
+# the name of the ldap attribute to use
+LdapAttribute	=	"ucscPersonPubAffiliation" 
+
+# number of days to keep user records in the cache
+DaysPerRefresh	=	30
+
+# port for cirrup to listen on. if in doubt, choose 8443
+CirrupPort	=	8443
+
+# the ValueGidMap maps ldap attribute values to jss computergroup id's
+# put the ldap attribute values on the left and put the id's on the right
+[ValueGidMap]
+Staff		=	1
+Faculty		=	2
