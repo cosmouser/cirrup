@@ -94,16 +94,24 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 
-		// confirm that the json can be successfully
-		// decoded
-		fmt.Printf("cirrup: received report from %d %v\n", c.Event.JssID, c.Event.Username)
-		userInCache := data.LookupUser(c.Event.Username)
+		var userEmpty, userInCache bool
+		var affiliation string
+		userEmpty = c.Event.Username == ""
+
+		if userEmpty {
+			fmt.Printf("cirrup: received report from %d\n", c.Event.JssID)
+		} else {
+			fmt.Printf("cirrup: received report from %d with username %v\n", c.Event.JssID, c.Event.Username)
+		}
+
+		if !userEmpty {
+			userInCache = data.LookupUser(c.Event.Username)
+		}
 
 		// check if the user is in the cache already
 		// if they aren't, then add them to the cache
-		// after getting their affiliation from
-		// ldap-blue
-		if !userInCache {
+		// after getting their affiliation from ldap
+		if !userInCache && !userEmpty {
 			result, err := helpers.GetLdapValue(config.LdapUrl,
 				config.LdapSearchBase,
 				c.Event.Username,
@@ -120,13 +128,18 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Show that the insertion was successfull
-		userInCache = data.LookupUser(c.Event.Username)
-		if !userInCache {
-			fmt.Fprintf(os.Stderr, "cirrup: could not add user to cache")
-			return
-		}
+		if !userEmpty {
+			userInCache = data.LookupUser(c.Event.Username)
+			if !userInCache {
+				fmt.Fprintf(os.Stderr, "cirrup: could not add user to cache")
+				return
+			}
 
-		affiliation := data.GetUserAff(c.Event.Username)
+			affiliation = data.GetUserAff(c.Event.Username)
+
+		} else {
+			affiliation = ""
+		}
 
 		// Check to see if the computer is in the cache
 		// If not, put it in the cache with an fsg_id of 0
