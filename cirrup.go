@@ -157,7 +157,6 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 		// have the correct computergroup
 		computers, err := data.FindUnmatchedComputers(c.Event.Username, d_fsg)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "cirrup: %v\n", err)
 			return
 		}
 
