@@ -131,7 +131,7 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 		if !userEmpty {
 			userInCache = data.LookupUser(c.Event.Username)
 			if !userInCache {
-				fmt.Fprintf(os.Stderr, "cirrup: could not add user to cache")
+				fmt.Fprintf(os.Stderr, "cirrup: could not add user to cache\n")
 				return
 			}
 
@@ -158,8 +158,8 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 
 		// Show that the insertion was successfull
 		computerInCache = data.LookupComputer(c.Event.JssID)
-		if !userInCache {
-			fmt.Fprintf(os.Stderr, "cirrup: could not add computer to cache")
+		if !computerInCache {
+			fmt.Fprintf(os.Stderr, "cirrup: could not add computer to cache\n")
 			return
 		}
 
