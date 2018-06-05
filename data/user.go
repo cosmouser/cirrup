@@ -2,13 +2,7 @@ package data
 
 import (
 	"fmt"
-	"os"
 )
-
-type UserRecord struct {
-	UniqueID    string
-	Affiliation string
-}
 
 // LookupUser returns true if the user is already in the database or else false
 func LookupUser(uid string) bool {
@@ -20,7 +14,7 @@ func LookupUser(uid string) bool {
 	for rows.Next() {
 		err = rows.Scan(&count)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "cirrup/data: %v\n", err)
+			Warn.Printf("cirrup/data: %v\n", err)
 		}
 	}
 	if count != 1 {
@@ -39,7 +33,7 @@ func GetUserAff(uid string) string {
 	for rows.Next() {
 		err = rows.Scan(&affiliation)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "cirrup/data: %v\n", err)
+			Warn.Printf("cirrup/data: %v\n", err)
 		}
 	}
 	return affiliation
@@ -65,27 +59,24 @@ func InsertUser(unique_id string, affiliation string) error {
 }
 
 // CullUsers removes users added after a specified number of days
-func CullUsers(days int) error {
+func CullUsers(days int) (int, error) {
 	tx, err := Db.Begin()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	stmt, err := tx.Prepare("delete from users where (julianday('now') - julianday(timestamp)) > ?;")
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer stmt.Close()
 	result, err := stmt.Exec(days)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	tx.Commit()
 	numCulled, err := result.RowsAffected()
 	if err != nil {
-		return err
+		return 0, err
 	}
-	if numCulled > 0 {
-		fmt.Printf("cirrup/data: %d user(s) culled\n", numCulled)
-	}
-	return nil
+	return int(numCulled), nil
 }

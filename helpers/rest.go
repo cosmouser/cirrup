@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"../data"
 	"errors"
 	"fmt"
 	"net/http"
@@ -66,7 +67,7 @@ func SendDeletion(computers []int, fsg_id int, aconfig RestAuth) error {
 		return err
 	}
 	if resp.StatusCode == 201 {
-		fmt.Printf("cirrup: removed %v from fsg %d\n",
+		data.Info.Printf("cirrup: removed %v from fsg %d\n",
 			computers,
 			fsg_id,
 		)
@@ -77,7 +78,7 @@ func SendDeletion(computers []int, fsg_id int, aconfig RestAuth) error {
 	// whatever computers that were in the request that caused
 	// the 409 to the fsg of 0.
 	if resp.StatusCode == 409 {
-		fmt.Printf("cirrup: conflict encountered removing %v from fsg %d\n",
+		data.Info.Printf("cirrup: conflict encountered removing %v from fsg %d\n",
 			computers,
 			fsg_id,
 		)
@@ -105,7 +106,7 @@ func SendAddition(computers []int, fsg_id int, aconfig RestAuth) error {
 		return err
 	}
 	if resp.StatusCode == 201 {
-		fmt.Printf("cirrup: added %v to fsg %d\n",
+		data.Info.Printf("cirrup: added %v to fsg %d\n",
 			computers,
 			fsg_id,
 		)

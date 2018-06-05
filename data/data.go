@@ -3,25 +3,53 @@ package data
 import (
 	"database/sql"
 	"flag"
-	"fmt"
 	_ "github.com/mattn/go-sqlite3"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
 )
+
+var (
+	Trace *log.Logger
+	Info  *log.Logger
+	Warn  *log.Logger
+	Error *log.Logger
+)
+
+func logs(traceHandle, infoHandle, warnHandle, errHandle io.Writer) {
+	Trace = log.New(traceHandle, "TRACE: ", log.Ldate|log.Ltime)
+	Info = log.New(infoHandle, "INFO: ", log.Ldate|log.Ltime)
+	Warn = log.New(warnHandle, "WARNING: ", log.Ldate|log.Ltime)
+	Error = log.New(errHandle, "ERROR: ", log.Ldate|log.Ltime)
+}
 
 var Db *sql.DB
 
 func init() {
 	var err error
+	intPtr := flag.Int("v", 3, "-v sets the verbosity level, scale is 1-4. 4 is most verbose")
 	boolPtr := flag.Bool("load", false, "use -load to load the existing cache.db")
 	flag.Parse()
+	switch *intPtr {
+	case 1:
+		logs(ioutil.Discard, ioutil.Discard, ioutil.Discard, os.Stderr)
+	case 2:
+		logs(ioutil.Discard, ioutil.Discard, os.Stderr, os.Stderr)
+	case 3:
+		logs(ioutil.Discard, os.Stdout, os.Stderr, os.Stderr)
+	case 4:
+		logs(os.Stdout, os.Stdout, os.Stderr, os.Stderr)
+	default:
+		logs(ioutil.Discard, os.Stdout, os.Stderr, os.Stderr)
+	}
 	if *boolPtr != true {
 		os.Remove("./cache.db")
-		fmt.Println("cirrup/data: initializing db")
+		Info.Println("cirrup/data: initializing db")
 	}
 	Db, err = sql.Open("sqlite3", "./cache.db")
 	if err != nil {
-		log.Fatal(err)
+		Error.Fatal(err)
 	}
 	sqlStmt := `
  	create table if not exists users 
@@ -34,7 +62,7 @@ func init() {
 	if *boolPtr != true {
 		_, err = Db.Exec(sqlStmt)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "cirrup/data: %q: %s\n", err, sqlStmt)
+			Error.Printf("cirrup/data: %q: %s\n", err, sqlStmt)
 			return
 		}
 	}
