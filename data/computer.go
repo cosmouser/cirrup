@@ -3,7 +3,6 @@ package data
 import (
 	"errors"
 	"fmt"
-	"log"
 )
 
 type ComputerRecord struct {
@@ -119,7 +118,7 @@ func FindUnmatchedComputers(username string, fsg_id int) ([]ComputerRecord, erro
 	row := Db.QueryRow(stmt)
 	err := row.Scan(&count)
 	if err != nil {
-		log.Fatal(err)
+		Error.Fatal(err)
 	}
 	if count < 1 {
 		return nil, errors.New(fmt.Sprintf("No Unmatched Computers Found for %v with %d\n", username, fsg_id))
