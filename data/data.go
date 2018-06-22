@@ -68,3 +68,19 @@ func init() {
 	}
 	return
 }
+
+func GetDBSize() float64 {
+	var numPages, pageSize float64
+	row := Db.QueryRow("pragma page_count")
+	err := row.Scan(&numPages)
+	if err != nil {
+		Error.Fatal(err)
+	}
+	row = Db.QueryRow("pragma page_size")
+	err = row.Scan(&pageSize)
+	if err != nil {
+		Error.Fatal(err)
+	}
+	return numPages * pageSize
+}
+	
