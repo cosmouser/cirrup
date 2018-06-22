@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/BurntSushi/toml"
-	"net/http"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -194,7 +194,7 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 						data.UpdateComputer(cid, 0, c.Event.Username)
 					}
 				}
-				rpcsMade.With(prometheus.Labels{"type": "delete"}).Inc()
+				rpcsMade.With(prometheus.Labels{"method": "delete"}).Inc()
 			}
 		}
 		err = helpers.SendAddition(cids, d_fsg, authconfig)
@@ -205,13 +205,14 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 		for _, cid := range cids {
 			data.UpdateComputer(cid, d_fsg, c.Event.Username)
 		}
-		rpcsMade.With(prometheus.Labels{"type": "add"}).Inc()
+		rpcsMade.With(prometheus.Labels{"method": "add"}).Inc()
 
 	default:
 		w.WriteHeader(http.StatusNotImplemented)
 		w.Write([]byte(http.StatusText(http.StatusNotImplemented) + "\n"))
 	}
 }
+
 var (
 	hooksReceived = prometheus.NewCounter(
 		prometheus.CounterOpts{
@@ -224,20 +225,21 @@ var (
 			Name: "cirrup_rpcs_made_total",
 			Help: "Total number of rpcs made to the JSS.",
 		},
-		[]string{"type"},
+		[]string{"method"},
 	)
 	dbSize = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "cirrup_db_size_bytes",
 		Help: "Current size of the Cirrup db in bytes",
 	})
 )
+
 func init() {
 	// Register the counters and gauges with Prometheus's default registry.
 	prometheus.MustRegister(hooksReceived)
 	prometheus.MustRegister(rpcsMade)
 	prometheus.MustRegister(dbSize)
 }
-	
+
 func main() {
 	var err error
 	_, err = toml.DecodeFile("config.toml", &config)
@@ -250,7 +252,7 @@ func main() {
 			time.Sleep(time.Hour * 24)
 		}
 	}()
-	
+
 	go func() {
 		for {
 			dbSize.Set(data.GetDBSize())
