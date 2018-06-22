@@ -11,10 +11,11 @@ import (
 )
 
 var (
-	Trace *log.Logger
-	Info  *log.Logger
-	Warn  *log.Logger
-	Error *log.Logger
+	Trace      *log.Logger
+	Info       *log.Logger
+	Warn       *log.Logger
+	Error      *log.Logger
+	ConfigPath string
 )
 
 func logs(traceHandle, infoHandle, warnHandle, errHandle io.Writer) {
@@ -27,9 +28,13 @@ func logs(traceHandle, infoHandle, warnHandle, errHandle io.Writer) {
 var Db *sql.DB
 
 func init() {
-	var err error
+	var (
+		err      error
+		dbExists bool = true
+	)
 	intPtr := flag.Int("v", 3, "-v sets the verbosity level, scale is 1-4. 4 is most verbose")
-	boolPtr := flag.Bool("load", false, "use -load to load the existing cache.db")
+	configPath := flag.String("config", "./config.toml", "use -config to specify the config file to load")
+	dbPath := flag.String("dbpath", "./cache.db", "use -dbpath to point to a database to use. If the database does not exist, cirrup will create one")
 	flag.Parse()
 	switch *intPtr {
 	case 1:
@@ -43,11 +48,18 @@ func init() {
 	default:
 		logs(ioutil.Discard, os.Stdout, os.Stderr, os.Stderr)
 	}
-	if *boolPtr != true {
-		os.Remove("./cache.db")
-		Info.Println("cirrup/data: initializing db")
+	if *configPath == "" {
+		Error.Fatalf("please specify a config to load\n")
+	} else {
+		ConfigPath = *configPath
 	}
-	Db, err = sql.Open("sqlite3", "./cache.db")
+	if *dbPath == "" {
+		Error.Fatalf("please specify a database file to load\n")
+	}
+	if _, err := os.Stat(*dbPath); os.IsNotExist(err) {
+		dbExists = false
+	}
+	Db, err = sql.Open("sqlite3", *dbPath)
 	if err != nil {
 		Error.Fatal(err)
 	}
@@ -59,7 +71,7 @@ func init() {
  	delete from users;
  	delete from computers;
  	`
-	if *boolPtr != true {
+	if dbExists == false {
 		_, err = Db.Exec(sqlStmt)
 		if err != nil {
 			Error.Printf("cirrup/data: %q: %s\n", err, sqlStmt)
@@ -83,4 +95,3 @@ func GetDBSize() float64 {
 	}
 	return numPages * pageSize
 }
-	

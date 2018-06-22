@@ -242,7 +242,7 @@ func init() {
 
 func main() {
 	var err error
-	_, err = toml.DecodeFile("config.toml", &config)
+	_, err = toml.DecodeFile(data.ConfigPath, &config)
 	if err != nil {
 		data.Error.Fatal(err)
 	}
