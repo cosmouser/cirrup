@@ -9,7 +9,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -74,11 +73,11 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Only accept requests from the ip specified in the config
-	if strings.Index(r.RemoteAddr, config.JssIP) != 0 {
+        if realIP := r.Header.Get("X-Real-IP"); realIP != config.JssIP {
 		w.WriteHeader(http.StatusForbidden)
 		w.Write([]byte(http.StatusText(http.StatusForbidden) + "\n"))
-		return
-	}
+                return
+        }
 	switch r.Method {
 	case "GET":
 		w.Write([]byte("This is the cirrup handler."))
@@ -88,6 +87,7 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			data.Error.Fatal(err)
 		}
+	        hooksReceived.Inc()
 
 		var userEmpty, userInCache bool
 		var affiliation string
