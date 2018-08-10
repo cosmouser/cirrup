@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // RestAuth is a subset of the toml config for passing auth into
@@ -59,7 +60,9 @@ func SendDeletion(computers []int, fsg_id int, aconfig RestAuth) error {
 		fmt.Sprintf("%s:%d", aconfig.JssUrl, aconfig.JssPort),
 		fsg_id,
 	)
-	client := &http.Client{}
+	var client = &http.Client{
+		Timeout: time.Second * 10,
+	}
 	req, err := http.NewRequest("PUT", resourceURI, xmlReader)
 	req.SetBasicAuth(aconfig.ApiUser, aconfig.ApiPass)
 	resp, err := client.Do(req)
@@ -98,7 +101,9 @@ func SendAddition(computers []int, fsg_id int, aconfig RestAuth) error {
 		fmt.Sprintf("%s:%d", aconfig.JssUrl, aconfig.JssPort),
 		fsg_id,
 	)
-	client := &http.Client{}
+	var client = &http.Client{
+		Timeout: time.Second * 10,
+	}
 	req, err := http.NewRequest("PUT", resourceURI, xmlReader)
 	req.SetBasicAuth(aconfig.ApiUser, aconfig.ApiPass)
 	resp, err := client.Do(req)
