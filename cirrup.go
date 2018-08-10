@@ -14,7 +14,6 @@ import (
 
 type Config struct {
 	JssUrl         string
-	JssIP          string
 	JssPort        int
 	ApiUser        string
 	ApiPass        string
@@ -72,12 +71,6 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	// Only accept requests from the ip specified in the config
-        if realIP := r.Header.Get("X-Real-IP"); realIP != config.JssIP {
-		w.WriteHeader(http.StatusForbidden)
-		w.Write([]byte(http.StatusText(http.StatusForbidden) + "\n"))
-                return
-        }
 	switch r.Method {
 	case "GET":
 		w.Write([]byte("This is the cirrup handler."))
@@ -87,7 +80,7 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			data.Error.Fatal(err)
 		}
-	        hooksReceived.Inc()
+		hooksReceived.Inc()
 
 		var userEmpty, userInCache bool
 		var affiliation string

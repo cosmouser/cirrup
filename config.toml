@@ -5,9 +5,6 @@
 # the url for the jss with https://
 JssUrl		=	"https://example-jss.example.edu" 
 
-# the ip of the jss
-JssIP		=	"192.224.16.120" 
-
 # the port number the jss is hosted on
 JssPort		=	8443 
 

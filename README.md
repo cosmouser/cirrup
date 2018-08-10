@@ -22,9 +22,5 @@ the executable.
 
 ## Usage
 
-After filling out your config.toml, run cirrup without any arguments 
-`./cirrup`
-to initialize the caching database. Then, make sure to start cirrup with the -load flag 
-`./cirrup -load`
-to use the existing cache. If you run cirrup without the -load flag, it will truncate cache.db and recreate it.
+After filling out your config.toml, run `./cirrup -h` to see the usage.
 
