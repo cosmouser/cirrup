@@ -8,6 +8,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 )
@@ -77,7 +78,7 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		err := json.NewDecoder(r.Body).Decode(&c)
 		if err != nil {
-			data.Error.Fatal(err)
+			log.Fatal(err)
 		}
 		defer r.Body.Close()
 		hooksReceived.Inc()
@@ -86,11 +87,10 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 		var affiliation string
 		userEmpty = c.Event.Username == ""
 
-		if userEmpty {
-			data.Trace.Printf("cirrup: received report from %d\n", c.Event.JssID)
-		} else {
-			data.Trace.Printf("cirrup: received report from %d with username %v\n", c.Event.JssID, c.Event.Username)
-		}
+		log.WithFields(log.Fields{
+			"jssID":    c.Event.JssID,
+			"username": c.Event.Username,
+		}).Info("webhook received")
 
 		if !userEmpty {
 			userInCache = data.LookupUser(c.Event.Username)
@@ -107,11 +107,11 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 				config.LdapPort,
 			)
 			if err != nil {
-				data.Error.Fatal(err)
+				log.Fatal(err)
 			}
 			err = data.InsertUser(c.Event.Username, result)
 			if err != nil {
-				data.Warn.Printf("cirrup: %v\n", err)
+				log.Warn(err)
 			}
 		}
 
@@ -119,7 +119,10 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 		if !userEmpty {
 			userInCache = data.LookupUser(c.Event.Username)
 			if !userInCache {
-				data.Warn.Printf("cirrup: could not add user to cache\n")
+				log.WithFields(log.Fields{
+					"jssID":    c.Event.JssID,
+					"username": c.Event.Username,
+				}).Warn("user was not added to cache")
 				return
 			}
 
@@ -136,7 +139,10 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 		if !computerInCache {
 			err = data.InsertComputer(c.Event.JssID, 0, c.Event.Username)
 			if err != nil {
-				data.Warn.Printf("cirrup: %v\n", err)
+				log.WithFields(log.Fields{
+					"jssID":    c.Event.JssID,
+					"username": c.Event.Username,
+				}).Warn(err)
 			}
 		} else {
 			if data.GetComputerUser(c.Event.JssID) != c.Event.Username {
@@ -147,7 +153,10 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 		// Show that the insertion was successfull
 		computerInCache = data.LookupComputer(c.Event.JssID)
 		if !computerInCache {
-			data.Warn.Printf("cirrup: could not add computer to cache\n")
+			log.WithFields(log.Fields{
+				"jssID":    c.Event.JssID,
+				"username": c.Event.Username,
+			}).Warn("computer was not added to cache")
 			return
 		}
 
@@ -192,7 +201,7 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 		}
 		err = helpers.SendAddition(cids, d_fsg, authconfig)
 		if err != nil {
-			data.Warn.Printf("cirrup: %v\n", err)
+			log.Warn(err)
 			return
 		}
 		for _, cid := range cids {
@@ -237,7 +246,7 @@ func main() {
 	var err error
 	_, err = toml.DecodeFile(data.ConfigPath, &config)
 	if err != nil {
-		data.Error.Fatal(err)
+		log.Fatal(err)
 	}
 	go func() {
 		for {
@@ -252,7 +261,9 @@ func main() {
 			time.Sleep(time.Second * 60)
 		}
 	}()
-	data.Info.Println("The cirrup has been poured. Listening on port", config.CirrupPort)
+	log.WithFields(log.Fields{
+		"port": config.CirrupPort,
+	}).Info("The cirrup has been poured")
 	http.HandleFunc("/handle_cirrup", handleCirrup)
 	http.Handle("/metrics", promhttp.Handler())
 	http.ListenAndServe(fmt.Sprintf(":%d", config.CirrupPort), nil)

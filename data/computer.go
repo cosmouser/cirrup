@@ -3,6 +3,7 @@ package data
 import (
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 type ComputerRecord struct {
@@ -17,13 +18,13 @@ func LookupComputer(computer_id int) bool {
 	var count int
 	rows, err := Db.Query(fmt.Sprintf("select count(computer_id) from computers where computer_id='%d'", computer_id))
 	if err != nil {
-		Warn.Printf("cirrup/data: %v\n", err)
+		log.Warn(err)
 	}
 	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&count)
 		if err != nil {
-			Warn.Printf("cirrup/data: %v\n", err)
+			log.Warn(err)
 		}
 	}
 	if count != 1 {
@@ -37,13 +38,13 @@ func GetComputerUser(computer_id int) string {
 	var username string
 	rows, err := Db.Query(fmt.Sprintf("select username from computers where computer_id='%d'", computer_id))
 	if err != nil {
-		Warn.Printf("cirrup/data: %v\n", err)
+		log.Warn(err)
 	}
 	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&username)
 		if err != nil {
-			Warn.Printf("cirrup/data: %v\n", err)
+			log.Warn(err)
 		}
 	}
 	return username
@@ -118,7 +119,7 @@ func FindUnmatchedComputers(username string, fsg_id int) ([]ComputerRecord, erro
 	row := Db.QueryRow(stmt)
 	err := row.Scan(&count)
 	if err != nil {
-		Error.Fatal(err)
+		log.Fatal(err)
 	}
 	if count < 1 {
 		return nil, errors.New(fmt.Sprintf("No Unmatched Computers Found for %v with %d\n", username, fsg_id))
@@ -130,14 +131,14 @@ func FindUnmatchedComputers(username string, fsg_id int) ([]ComputerRecord, erro
 	)
 	rows, err := Db.Query(stmt)
 	if err != nil {
-		Warn.Printf("cirrup/data: %v\n", err)
+		log.Warn(err)
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var cr ComputerRecord
 		err = rows.Scan(&cr.ComputerID, &cr.Username, &cr.FsgID)
 		if err != nil {
-			Warn.Printf("cirrup/data: %v\n", err)
+			log.Warn(err)
 		}
 		computers = append(computers, cr)
 	}

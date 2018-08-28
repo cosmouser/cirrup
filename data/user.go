@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 // LookupUser returns true if the user is already in the database or else false
@@ -14,7 +15,7 @@ func LookupUser(uid string) bool {
 	for rows.Next() {
 		err = rows.Scan(&count)
 		if err != nil {
-			Warn.Printf("cirrup/data: %v\n", err)
+			log.Warn(err)
 		}
 	}
 	if count != 1 {
@@ -33,7 +34,7 @@ func GetUserAff(uid string) string {
 	for rows.Next() {
 		err = rows.Scan(&affiliation)
 		if err != nil {
-			Warn.Printf("cirrup/data: %v\n", err)
+			log.Warn(err)
 		}
 	}
 	return affiliation

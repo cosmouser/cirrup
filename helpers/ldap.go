@@ -1,8 +1,8 @@
 package helpers
 
 import (
-	"../data"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/ldap.v2"
 )
 
@@ -10,7 +10,7 @@ func GetLdapValue(url, base, uid, attr string, port int) (string, error) {
 	attrValue := ""
 	l, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", url, port))
 	if err != nil {
-		data.Warn.Printf("cirrup/ldap: %v\n", err)
+		log.Warn(err)
 	}
 	defer l.Close()
 
@@ -23,7 +23,7 @@ func GetLdapValue(url, base, uid, attr string, port int) (string, error) {
 	)
 	sr, err := l.Search(searchRequest)
 	if err != nil {
-		data.Warn.Printf("cirrup/ldap: %v\n", err)
+		log.Warn(err)
 	}
 	for _, entry := range sr.Entries {
 		attrValue = entry.GetAttributeValue(attr)

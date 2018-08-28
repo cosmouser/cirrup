@@ -1,9 +1,9 @@
 package helpers
 
 import (
-	"../data"
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 	"time"
@@ -71,10 +71,10 @@ func SendDeletion(computers []int, fsg_id int, aconfig RestAuth) error {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 201 {
-		data.Info.Printf("cirrup: removed %v from fsg %d\n",
-			computers,
-			fsg_id,
-		)
+		log.WithFields(log.Fields{
+			"computers": computers,
+			"dsg":       fsg_id,
+		}).Info("removed computers from static group")
 	}
 	// If the status code is 409 on a deletion, none of the
 	// computers are actually removed from the group.
@@ -82,10 +82,11 @@ func SendDeletion(computers []int, fsg_id int, aconfig RestAuth) error {
 	// whatever computers that were in the request that caused
 	// the 409 to the fsg of 0.
 	if resp.StatusCode == 409 {
-		data.Info.Printf("cirrup: conflict encountered removing %v from fsg %d\n",
-			computers,
-			fsg_id,
-		)
+		log.WithFields(log.Fields{
+			"computers": computers,
+			"dsg":       fsg_id,
+		}).Warn("conflict encountered removing computers from static group")
+
 	}
 	return nil
 }
@@ -113,10 +114,10 @@ func SendAddition(computers []int, fsg_id int, aconfig RestAuth) error {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 201 {
-		data.Info.Printf("cirrup: added %v to fsg %d\n",
-			computers,
-			fsg_id,
-		)
+		log.WithFields(log.Fields{
+			"computers": computers,
+			"dsg":       fsg_id,
+		}).Info("added computers to static group")
 	}
 	return nil
 }
