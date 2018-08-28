@@ -75,11 +75,11 @@ func handleCirrup(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		w.Write([]byte("This is the cirrup handler."))
 	case "POST":
-		defer r.Body.Close()
 		err := json.NewDecoder(r.Body).Decode(&c)
 		if err != nil {
 			data.Error.Fatal(err)
 		}
+		defer r.Body.Close()
 		hooksReceived.Inc()
 
 		var userEmpty, userInCache bool

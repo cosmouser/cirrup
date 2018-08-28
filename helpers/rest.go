@@ -69,6 +69,7 @@ func SendDeletion(computers []int, fsg_id int, aconfig RestAuth) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode == 201 {
 		data.Info.Printf("cirrup: removed %v from fsg %d\n",
 			computers,
@@ -110,6 +111,7 @@ func SendAddition(computers []int, fsg_id int, aconfig RestAuth) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode == 201 {
 		data.Info.Printf("cirrup: added %v to fsg %d\n",
 			computers,
